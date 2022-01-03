@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import sys
-from PyQt5.QtGui import QPixmap
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from RSIC.utils import Chart, PhotoViewer
+from RSIC.utils import Chart, PhotoViewer, Tiff2array, Exporter
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1062, 693)
         MainWindow.setAutoFillBackground(False)
-        MainWindow.setStyleSheet("background-color:black")
+        MainWindow.setStyleSheet("background-color:gray")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.window_layout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -54,6 +54,7 @@ class Ui_MainWindow(object):
         self.btn_export.setText("")
         self.btn_export.setObjectName("btn_export")
         self.btn_export.setIcon(QIcon('asset/icon/export.png'))
+        self.btn_export.clicked.connect(self.export_img)
 
         self.btn_layout.addWidget(self.btn_export)
         self.btn_histogram = QtWidgets.QPushButton(self.centralwidget)
@@ -67,7 +68,7 @@ class Ui_MainWindow(object):
         self.btn_histogram.setText("")
         self.btn_histogram.setObjectName("btn_histogram")
         self.btn_histogram.setIcon(QIcon('asset/icon/histogram.png'))
-        self.btn_histogram.clicked.connect(self.test)
+        self.btn_histogram.clicked.connect(self.click_btn_histogram)
 
         self.btn_layout.addWidget(self.btn_histogram)
         self.btn_classify = QtWidgets.QPushButton(self.centralwidget)
@@ -104,29 +105,38 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.file_name = None
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Remote Sensing Image Classification"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "RSIC"))
         self.btn_open.setToolTip(_translate("MainWindow", "打开文件"))
         self.btn_export.setToolTip(_translate("MainWindow", "结果另存为"))
         self.btn_histogram.setToolTip(_translate("MainWindow", "像元统计"))
         self.btn_classify.setToolTip(_translate("MainWindow", "分类"))
         self.btn_help.setToolTip(_translate("MainWindow", "帮助"))
 
-
-
     def get_file(self, window):
-        self.file_name, _ = QFileDialog.getOpenFileName(window, "选择影像", r'E:\Desktop\GisFile\DEM', '*.tif;;*.jpg;;*.jpeg;;*.png')
-        if self.file_name:
-            self.gv_img.setPhoto(QPixmap(self.file_name))
-            """
-            pix = QPixmap(self.file_name)
-            item = QGraphicsPixmapItem(pix)
-            scene = QGraphicsScene()
-            scene.addItem(item)
-            self.gv_img.setScene(scene)
-            """
+        try:
+            file_name, _ = QFileDialog.getOpenFileName(window, "选择影像", r'E:\Desktop\GisFile\DEM',
+                                                            '*.tif;;*.jpg;;*.jpeg;;*.png')
+
+            if file_name:
+                self.file_name = file_name
+                self.tif_thread = Tiff2array(self.file_name)
+                self.tif_thread.singal.connect(self.show_chart)
+                self.gv_img.setPhoto(QPixmap(self.file_name))
+        except:
+            print("Select file failed!")
         """
+        # 添加图片到QGraphicsView
+        pix = QPixmap(self.file_name)
+        item = QGraphicsPixmapItem(pix)
+        scene = QGraphicsScene()
+        scene.addItem(item)
+        self.gv_img.setScene(scene)
+        
+        # 打开影像的另外一种方法
         self.dialog = QFileDialog()
         self.dialog.setWindowTitle("选择影像")
         self.dialog.setFilter("Image files (*.tif)")
@@ -135,9 +145,29 @@ class Ui_MainWindow(object):
             file_name = self.dialog.selectedFiles()[0]
             print(file_name)
         """
-    def test(self):
-        chart = Chart()
+    def click_btn_histogram(self):
+        try:
+            if self.file_name:
+                self.tif_thread.start()
+            else:
+                QMessageBox.information(self.centralwidget, '消息', '未选择影像!', QMessageBox.Yes)
+        except:
+            print("read tiff failed!")
+
+    def show_chart(self,n):
+        chart = Chart(n)
         chart.show()
+    def export_img(self):
+        try:
+            fname, ftype = QFileDialog.getSaveFileName(self.centralwidget, '导出为', 'E:/Desktop', "*.png;;*.tif;;*.jpg")
+            if fname:
+                exporter = Exporter(self.gv_img.scene(), fname)
+                exporter.start()
+                QMessageBox.information(self.centralwidget, '消息', '导出成功！', QMessageBox.Yes)
+            else:
+                pass
+        except:
+            print("导出图片失败")
 
 class My_window(QMainWindow):
     def __init__(self):
@@ -145,7 +175,7 @@ class My_window(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.set_ui()
-        self.setStyleSheet("width:100vw;height:100vh;background-color:black")
+        self.setStyleSheet("background-color:gray")
         self.resize(1600, 900)
     def set_ui(self):
         self.setWindowIcon(QIcon(r'asset/icon/sticker.png'))
