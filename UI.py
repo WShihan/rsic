@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from RSIC.utils import Chart, PhotoViewer, Tiff2array, Exporter
 
 class Ui_MainWindow(object):
@@ -95,6 +96,7 @@ class Ui_MainWindow(object):
         self.btn_help.setText("")
         self.btn_help.setObjectName("btn_help")
         self.btn_help.setIcon(QIcon('asset/icon/help.png'))
+        self.btn_help.clicked.connect(self.help)
 
         self.btn_layout.addWidget(self.btn_help)
         spacerItem = QtWidgets.QSpacerItem(10, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -126,8 +128,8 @@ class Ui_MainWindow(object):
                 self.tif_thread = Tiff2array(self.file_name)
                 self.tif_thread.singal.connect(self.show_chart)
                 self.gv_img.setPhoto(QPixmap(self.file_name))
-        except:
-            print("Select file failed!")
+        except Exception as e:
+            print("Select file failed!" + str(e))
         """
         # 添加图片到QGraphicsView
         pix = QPixmap(self.file_name)
@@ -151,23 +153,37 @@ class Ui_MainWindow(object):
                 self.tif_thread.start()
             else:
                 QMessageBox.information(self.centralwidget, '消息', '未选择影像!', QMessageBox.Yes)
-        except:
-            print("read tiff failed!")
+        except Exception as e:
+            print("read tiff failed!" + str(e))
 
     def show_chart(self,n):
         chart = Chart(n)
         chart.show()
     def export_img(self):
         try:
-            fname, ftype = QFileDialog.getSaveFileName(self.centralwidget, '导出为', 'E:/Desktop', "*.png;;*.tif;;*.jpg")
-            if fname:
-                exporter = Exporter(self.gv_img.scene(), fname)
-                exporter.start()
-                QMessageBox.information(self.centralwidget, '消息', '导出成功！', QMessageBox.Yes)
+            if self.file_name:
+                fname, ftype = QFileDialog.getSaveFileName(self.centralwidget, '导出为', 'E:/Desktop',
+                                                           "*.png;;*.tif;;*.jpg")
+                if fname:
+                    exporter = Exporter(self.gv_img.scene(), fname)
+                    exporter.start()
+                    QMessageBox.information(self.centralwidget, '消息', '导出成功！', QMessageBox.Yes)
+                else:
+                    pass
             else:
-                pass
-        except:
-            print("导出图片失败")
+                raise ValueError("未选择影像")
+        except Exception as e:
+            QMessageBox.information(self.centralwidget, '消息', '未选择影像!', QMessageBox.Yes)
+    def help(self):
+        self.help_win = QMainWindow()
+        self.help_win.setWindowTitle("帮助文档")
+        self.help_win.setWindowIcon((QIcon('asset/icon/help.png')))
+        self.help_win.resize(600,800)
+        self.wv = QWebEngineView()
+        self.wv.load(QUrl.fromLocalFile("E:/Desktop/mypython/PyQt5\RSIC/asset/记录.html"))
+        self.help_win.setCentralWidget(self.wv)
+        self.help_win.show()
+
 
 class My_window(QMainWindow):
     def __init__(self):
