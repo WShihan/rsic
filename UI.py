@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-import sys
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from RSIC.utils import Chart, PhotoViewer, Tiff2array, Exporter
 
+# Form implementation generated from reading ui file 'UI.ui'
+#
+# Created by: PyQt5 UI code generator 5.11.3
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from RSIC.utils import PhotoViewer
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1062, 693)
         MainWindow.setAutoFillBackground(False)
-        MainWindow.setStyleSheet("background-color:gray")
+        MainWindow.setStyleSheet("background-color:black")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.window_layout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -40,9 +41,6 @@ class Ui_MainWindow(object):
         self.btn_open.setStyleSheet("")
         self.btn_open.setText("")
         self.btn_open.setObjectName("btn_open")
-        self.btn_open.setIcon(QIcon('asset/icon/open.png'))
-        self.btn_open.clicked.connect(lambda: self.get_file(MainWindow))
-
         self.btn_layout.addWidget(self.btn_open)
         self.btn_export = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
@@ -54,9 +52,6 @@ class Ui_MainWindow(object):
         self.btn_export.setMaximumSize(QtCore.QSize(50, 50))
         self.btn_export.setText("")
         self.btn_export.setObjectName("btn_export")
-        self.btn_export.setIcon(QIcon('asset/icon/export.png'))
-        self.btn_export.clicked.connect(self.export_img)
-
         self.btn_layout.addWidget(self.btn_export)
         self.btn_histogram = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
@@ -68,9 +63,6 @@ class Ui_MainWindow(object):
         self.btn_histogram.setMaximumSize(QtCore.QSize(50, 50))
         self.btn_histogram.setText("")
         self.btn_histogram.setObjectName("btn_histogram")
-        self.btn_histogram.setIcon(QIcon('asset/icon/histogram.png'))
-        self.btn_histogram.clicked.connect(self.click_btn_histogram)
-
         self.btn_layout.addWidget(self.btn_histogram)
         self.btn_classify = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
@@ -82,8 +74,6 @@ class Ui_MainWindow(object):
         self.btn_classify.setMaximumSize(QtCore.QSize(50, 50))
         self.btn_classify.setText("")
         self.btn_classify.setObjectName("btn_classify")
-        self.btn_classify.setIcon(QIcon('asset/icon/classify.png'))
-
         self.btn_layout.addWidget(self.btn_classify)
         self.btn_help = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
@@ -95,9 +85,6 @@ class Ui_MainWindow(object):
         self.btn_help.setMaximumSize(QtCore.QSize(50, 50))
         self.btn_help.setText("")
         self.btn_help.setObjectName("btn_help")
-        self.btn_help.setIcon(QIcon('asset/icon/help.png'))
-        self.btn_help.clicked.connect(self.help)
-
         self.btn_layout.addWidget(self.btn_help)
         spacerItem = QtWidgets.QSpacerItem(10, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.btn_layout.addItem(spacerItem)
@@ -107,98 +94,12 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.file_name = None
-
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "RSIC"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Wsh遥感分类器"))
         self.btn_open.setToolTip(_translate("MainWindow", "打开文件"))
         self.btn_export.setToolTip(_translate("MainWindow", "结果另存为"))
-        self.btn_histogram.setToolTip(_translate("MainWindow", "像元统计"))
+        self.btn_histogram.setToolTip(_translate("MainWindow", "像元直方图"))
         self.btn_classify.setToolTip(_translate("MainWindow", "分类"))
         self.btn_help.setToolTip(_translate("MainWindow", "帮助"))
 
-    def get_file(self, window):
-        try:
-            file_name, _ = QFileDialog.getOpenFileName(window, "选择影像", r'E:\Desktop\GisFile\DEM',
-                                                            '*.tif;;*.jpg;;*.jpeg;;*.png')
-
-            if file_name:
-                self.file_name = file_name
-                self.tif_thread = Tiff2array(self.file_name)
-                self.tif_thread.singal.connect(self.show_chart)
-                self.gv_img.setPhoto(QPixmap(self.file_name))
-        except Exception as e:
-            print("Select file failed!" + str(e))
-        """
-        # 添加图片到QGraphicsView
-        pix = QPixmap(self.file_name)
-        item = QGraphicsPixmapItem(pix)
-        scene = QGraphicsScene()
-        scene.addItem(item)
-        self.gv_img.setScene(scene)
-        
-        # 打开影像的另外一种方法
-        self.dialog = QFileDialog()
-        self.dialog.setWindowTitle("选择影像")
-        self.dialog.setFilter("Image files (*.tif)")
-        #self.dialog.setFileMode(QFileDialog.AnyFile)  # 设置打开模式
-        if self.dialog.exec():
-            file_name = self.dialog.selectedFiles()[0]
-            print(file_name)
-        """
-    def click_btn_histogram(self):
-        try:
-            if self.file_name:
-                self.tif_thread.start()
-            else:
-                QMessageBox.information(self.centralwidget, '消息', '未选择影像!', QMessageBox.Yes)
-        except Exception as e:
-            print("read tiff failed!" + str(e))
-
-    def show_chart(self,n):
-        chart = Chart(n)
-        chart.show()
-    def export_img(self):
-        try:
-            if self.file_name:
-                fname, ftype = QFileDialog.getSaveFileName(self.centralwidget, '导出为', 'E:/Desktop',
-                                                           "*.png;;*.tif;;*.jpg")
-                if fname:
-                    exporter = Exporter(self.gv_img.scene(), fname)
-                    exporter.start()
-                    QMessageBox.information(self.centralwidget, '消息', '导出成功！', QMessageBox.Yes)
-                else:
-                    pass
-            else:
-                raise ValueError("未选择影像")
-        except Exception as e:
-            QMessageBox.information(self.centralwidget, '消息', '未选择影像!', QMessageBox.Yes)
-    def help(self):
-        self.help_win = QMainWindow()
-        self.help_win.setWindowTitle("帮助文档")
-        self.help_win.setWindowIcon((QIcon('asset/icon/help.png')))
-        self.help_win.resize(600,800)
-        self.wv = QWebEngineView()
-        self.wv.load(QUrl.fromLocalFile("E:/Desktop/mypython/PyQt5\RSIC/asset/记录.html"))
-        self.help_win.setCentralWidget(self.wv)
-        self.help_win.show()
-
-
-class My_window(QMainWindow):
-    def __init__(self):
-        super(My_window, self).__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.set_ui()
-        self.setStyleSheet("background-color:gray")
-        self.resize(1600, 900)
-    def set_ui(self):
-        self.setWindowIcon(QIcon(r'asset/icon/sticker.png'))
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    win = My_window()
-    win.show()
-    sys.exit(app.exec_())
