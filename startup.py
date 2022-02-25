@@ -3,7 +3,6 @@
 @Date: 2022/2/6
 @Author:Wang Shihan
 """
-
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -45,7 +44,7 @@ class RSIC_Win(QMainWindow, Ui_MainWindow):
 
     def get_file(self):
         try:
-            file_name, _ = QFileDialog.getOpenFileName(self, "选择影像", r'E:\Desktop\GisFile\DEM',
+            file_name, _ = QFileDialog.getOpenFileName(self, "选择影像", r'E:/Desktop/GisFile/',
                                                        '*.tif;;*.jpg;;*.jpeg;;*.png;;*.img')
             if file_name:
                 self.file_name = file_name
@@ -123,7 +122,6 @@ class RSIC_Win(QMainWindow, Ui_MainWindow):
         else:
             self.dilog = Classify_Diaglog()
         self.dilog.show()
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
