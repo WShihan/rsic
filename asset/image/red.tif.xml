@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="zh"><Esri><CreaDate>20211117</CreaDate><CreaTime>14403000</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="d:\program files (x86)\arcgis\desktop10.2\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ExtractByMask" Date="20211117" Time="144030">ExtractByMask LC08_L1TP_128044_20190329_20190404_01_T1_B4.TIF mlp E:\Desktop\mypython\GeoProcessing\red.tif</Process></lineage></DataProperties></Esri></metadata>
